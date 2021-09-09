@@ -41,15 +41,13 @@ function fetchData() {
 }
 
 function checkNeedUpdate() {
-    const nothingToUpdateStr = 'nothing to commit, working tree clean';
     return new Promise((resolve, reject) => {
-        exec('git status',
+        exec('git status -s',
             function (error, stdout, stderr) {
                 if (error !== null) {
                    reject(error);
                 }
-                resolve(stdout
-                    .split('\n').includes(nothingToUpdateStr));
+                resolve(stdout === '');
             });
     });
 }
