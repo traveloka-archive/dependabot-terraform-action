@@ -8,15 +8,16 @@ run();
 
 async function run() {
     try {
-        const labelsStr = core.getInput('labels');
         const scheduleInterval = core.getInput('schedule-interval');
         const excludedPaths = core.getInput('excluded-paths').split(',');
+        const labels = core.getInput('labels')
+            .split(',').filter(el => el !== '');
 
         fetchData()
             .then(async dirData => {
                 filteredData = dirData
                     .filter(data => data !== '' && !excludedPaths.includes(data));
-                createFile(labelsStr, scheduleInterval, filteredData);
+                createFile(labels, scheduleInterval, filteredData);
                 core.setOutput('need-update', await checkNeedUpdate());
             })
             .catch(err => {
@@ -41,20 +42,18 @@ function fetchData() {
 }
 
 function checkNeedUpdate() {
-    const nothingToUpdateStr = 'nothing to commit, working tree clean';
     return new Promise((resolve, reject) => {
-        exec('git status',
+        exec('git status -s',
             function (error, stdout, stderr) {
                 if (error !== null) {
                    reject(error);
                 }
-                resolve(stdout
-                    .split('\n').includes(nothingToUpdateStr));
+                resolve(stdout === '');
             });
     });
 }
 
-function createFile(labelsStr, scheduleInterval, dirData) {
+function createFile(labels, scheduleInterval, dirData) {
     const dir = '.github';
     const filePath = '.github/dependabot.yml';
     const yamlTemplate = {
@@ -63,14 +62,11 @@ function createFile(labelsStr, scheduleInterval, dirData) {
     };
 
     for(let data of dirData) {
-        const processedLabels = [];
-        labelsStr.split(',')
-            .filter(el => el !== '')
-            .forEach(el => processedLabels.push(el));
+        const entryLabels = labels.map(el => el);
         yamlTemplate.updates.push({
             "package-ecosystem": 'terraform',
             directory: data,
-            labels: processedLabels,
+            labels: entryLabels,
             schedule: {
                 interval: scheduleInterval
             }
