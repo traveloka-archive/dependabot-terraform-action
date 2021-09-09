@@ -10,7 +10,7 @@ async function run() {
     try {
         const labelsStr = core.getInput('labels');
         const scheduleInterval = core.getInput('schedule-interval');
-        const excludedPaths = core.getInput('excludedPath').split(',');
+        const excludedPaths = core.getInput('excluded-paths').split(',');
 
         fetchData()
             .then(async dirData => {
@@ -42,7 +42,6 @@ function fetchData() {
 
 function checkNeedUpdate() {
     const nothingToUpdateStr = 'nothing to commit, working tree clean';
-    const deciderIdx = 3;
     return new Promise((resolve, reject) => {
         exec('git status',
             function (error, stdout, stderr) {
@@ -50,7 +49,7 @@ function checkNeedUpdate() {
                    reject(error);
                 }
                 resolve(stdout
-                    .split('\n')[deciderIdx] === nothingToUpdateStr);
+                    .split('\n').includes(nothingToUpdateStr));
             });
     });
 }
