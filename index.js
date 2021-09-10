@@ -17,8 +17,8 @@ async function run() {
             .then(async dirData => {
                 filteredData = dirData
                     .filter(data => data !== '' && !excludedPaths.includes(data));
-                createFile(labels, scheduleInterval, filteredData);
-                core.setOutput('need-update', await checkNeedUpdate());
+                core.setOutput('file-has-changed', 
+                    createFile(labels, scheduleInterval, filteredData));
             })
             .catch(err => {
                 throw err;
@@ -41,16 +41,12 @@ function fetchData() {
     });
 }
 
-function checkNeedUpdate() {
-    return new Promise((resolve, reject) => {
-        exec('git status -s',
-            function (error, stdout, stderr) {
-                if (error !== null) {
-                   reject(error);
-                }
-                resolve(stdout === '');
-            });
+function checkNeedUpdate(yamlData, existingFilePath) {
+    const existingFileStr = fs.readFileSync(existingFilePath, {
+        encoding: 'utf8'
     });
+
+    return existingFileStr !== yamlData;
 }
 
 function createFile(labels, scheduleInterval, dirData) {
@@ -79,5 +75,13 @@ function createFile(labels, scheduleInterval, dirData) {
         fs.mkdirSync(dir);
     }
 
-    fs.writeFileSync(filePath, yamlStr, 'utf8');
+    let needUpdate = false;
+    if(fs.existsSync(filePath)) {
+        needUpdate = checkNeedUpdate(yamlStr, filePath);
+        if(needUpdate) {
+            fs.writeFileSync(filePath, yamlStr, 'utf8');
+        }
+    }
+
+    return needUpdate;
 }
