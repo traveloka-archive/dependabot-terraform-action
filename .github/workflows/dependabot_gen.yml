@@ -24,17 +24,10 @@ jobs:
           labels: "terraform,dependency"
           schedule-interval: "daily"
           excluded-paths: "/example/excluded"
-      - name: Commit files
+      - name: Create Pull Request
         if: steps.generator.outputs.file-has-changed
-        run: |
-          git status
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add -A
-          git commit -m "Update dependabot config : $(date)"
-      - name: Push changes
-        if: steps.generator.outputs.file-has-changed
-        uses: ad-m/github-push-action@v0.6.0
+        uses: peter-evans/create-pull-request@v3.10.1
         with:
-          branch: ${{ github.ref }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: Update dependabot config
+          title: Update dependabot config
+          body: Update dependabot config to reflect latest repo state
