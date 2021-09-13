@@ -1,6 +1,11 @@
 name: Generate dependabot config
 
-on: push
+on:
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: "0 16 * * *"
 
 jobs:
   dependabot_config_generator:
@@ -19,3 +24,15 @@ jobs:
           labels: "terraform,dependency"
           schedule-interval: "daily"
           excluded-paths: "/example/excluded"
+      - name: Commit files
+        if: steps.generator.outputs.file-has-changed
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git commit -m "Update dependabot config : $(date)"
+      - name: Push changes
+        if: steps.generator.outputs.file-has-changed
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
