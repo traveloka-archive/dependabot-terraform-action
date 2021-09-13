@@ -17,14 +17,14 @@ async function run() {
             .then(async dirData => {
                 filteredData = dirData
                     .filter(data => data !== '' && !excludedPaths.includes(data));
-                core.setOutput('file-has-changed', 
+                core.setOutput('file-has-changed',
                     createFile(labels, scheduleInterval, filteredData));
             })
             .catch(err => {
                 throw err;
             });
     } catch (error) {
-      core.setFailed(error.message);
+        core.setFailed(error.message);
     }
 }
 
@@ -34,7 +34,7 @@ function fetchData() {
         exec(fetchEntryCommand,
             function (error, stdout, stderr) {
                 if (error !== null) {
-                   reject(error);
+                    reject(error);
                 }
                 resolve(stdout.split('\n'));
             });
@@ -57,7 +57,7 @@ function createFile(labels, scheduleInterval, dirData) {
         updates: []
     };
 
-    for(let data of dirData) {
+    for (let data of dirData) {
         const entryLabels = labels.map(el => el);
         yamlTemplate.updates.push({
             "package-ecosystem": 'terraform',
@@ -69,16 +69,16 @@ function createFile(labels, scheduleInterval, dirData) {
         });
     }
 
-    const yamlStr = yaml.dump(yamlTemplate, {quotingType: "\"", forceQuotes: true});
+    const yamlStr = yaml.dump(yamlTemplate, { quotingType: "\"", forceQuotes: true });
 
-    if (!fs.existsSync(dir)){
+    if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir);
     }
 
     let needUpdate = false;
-    if(fs.existsSync(filePath)) {
+    if (fs.existsSync(filePath)) {
         needUpdate = checkNeedUpdate(yamlStr, filePath);
-        if(needUpdate) {
+        if (needUpdate) {
             fs.writeFileSync(filePath, yamlStr, 'utf8');
         }
     }

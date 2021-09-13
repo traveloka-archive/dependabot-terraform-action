@@ -1,0 +1,21 @@
+name: Generate dependabot config
+
+on: push
+
+jobs:
+  dependabot_config_generator:
+    runs-on: ubuntu-latest
+    name: Dependabot config generator for terraform
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2.2.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Generate config
+        id: generator
+        uses: ./
+        with:
+          labels: "terraform,dependency"
+          schedule-interval: "daily"
+          excluded-paths: "/example/excluded"
