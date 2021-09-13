@@ -7,6 +7,7 @@ const github = require('@actions/github');
 run();
 
 async function run() {
+    console.log("Running action...")
     try {
         const scheduleInterval = core.getInput('schedule-interval');
         const excludedPaths = core.getInput('excluded-paths').split(',');
@@ -17,6 +18,7 @@ async function run() {
             .then(async dirData => {
                 filteredData = dirData
                     .filter(data => data !== '' && !excludedPaths.includes(data));
+                console.log(filteredData)
                 core.setOutput('file-has-changed',
                     createFile(labels, scheduleInterval, filteredData));
             })
@@ -29,7 +31,7 @@ async function run() {
 }
 
 function fetchData() {
-    const fetchEntryCommand = `find . -type f -not -path "*/.terraform/*" -name \*.tf | sed s/^.// | sed 's/\/[^/]\+\.tf$//g' | uniq`;
+    const fetchEntryCommand = `find . -type f -not -path "*/.terraform/*" -name \\*.tf | sed s/^.// | sed 's/\\/[^/]\\+\\.tf$//g' | uniq`;
     return new Promise((resolve, reject) => {
         exec(fetchEntryCommand,
             function (error, stdout, stderr) {
@@ -70,17 +72,18 @@ function createFile(labels, scheduleInterval, dirData) {
     }
 
     const yamlStr = yaml.dump(yamlTemplate, { quotingType: "\"", forceQuotes: true });
+    console.log(yamlStr)
 
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir);
     }
 
-    let needUpdate = false;
+    let needUpdate = true;
     if (fs.existsSync(filePath)) {
         needUpdate = checkNeedUpdate(yamlStr, filePath);
-        if (needUpdate) {
-            fs.writeFileSync(filePath, yamlStr, 'utf8');
-        }
+    }
+    if (needUpdate) {
+        fs.writeFileSync(filePath, yamlStr, 'utf8');
     }
 
     return needUpdate;

@@ -3,7 +3,7 @@ name: Generate dependabot config
 on:
   push:
     branches:
-      - master
+      - main
   schedule:
     - cron: "0 16 * * *"
 
@@ -27,6 +27,7 @@ jobs:
       - name: Commit files
         if: steps.generator.outputs.file-has-changed
         run: |
+          git status
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add -A
@@ -35,4 +36,5 @@ jobs:
         if: steps.generator.outputs.file-has-changed
         uses: ad-m/github-push-action@v0.6.0
         with:
+          branch: ${{ github.ref }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
