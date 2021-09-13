@@ -1,0 +1,38 @@
+name: Generate dependabot config
+
+on:
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: "0 16 * * *"
+
+jobs:
+  dependabot_config_generator:
+    runs-on: ubuntu-latest
+    name: Dependabot config generator for terraform
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2.2.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Generate config
+        id: generator
+        uses: ./
+        with:
+          labels: "terraform,dependency"
+          schedule-interval: "daily"
+          excluded-paths: "/example/excluded"
+      - name: Commit files
+        if: steps.generator.outputs.file-has-changed
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git commit -m "Update dependabot config : $(date)"
+      - name: Push changes
+        if: steps.generator.outputs.file-has-changed
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}

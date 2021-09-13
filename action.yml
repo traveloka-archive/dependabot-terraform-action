@@ -1,0 +1,21 @@
+name: "Dependabot Terraform Config"
+description: "Generate Dependabot Config for Terraform"
+inputs:
+  schedule-interval:
+    description: "How often to check for updates"
+    required: false
+    default: "daily"
+  excluded-paths:
+    description: "Any paths you don't want dependabot to monitor"
+    required: false
+    default: ""
+  labels:
+    description: "Labels to set on pull requests"
+    required: false
+    default: "dependency,terraform"
+outputs:
+  file-has-changed:
+    description: "Whether dependabot config changed"
+runs:
+  using: "node12"
+  main: "dist/index.js"
