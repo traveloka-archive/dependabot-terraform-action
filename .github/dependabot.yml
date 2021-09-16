@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: "terraform"
+    directory: "/example"
+    labels:
+      - "terraform"
+      - "dependency"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "terraform"
+    directory: "/example/iam_role"
+    labels:
+      - "terraform"
+      - "dependency"
+    schedule:
+      interval: "daily"
